@@ -8,6 +8,7 @@ Thanks for helping keep this dataset accurate. This guide covers everything you 
 
 - [Approved contributors](#approved-contributors)
 - [Submitting a pull request](#submitting-a-pull-request)
+- [Worked example](#worked-example)
 - [Geometry standards](#geometry-standards)
 - [Local validation workflow](#local-validation-workflow)
 - [Glossary](#glossary)
@@ -61,6 +62,51 @@ Have a staff member from your facility email the request on your behalf. The ema
 6. For new sectors, include supporting documentation (AIP excerpts, SOPs, official charts) so reviewers can verify the geometry against an authoritative source.
 
 A good example PR is [#294](https://github.com/vatsimnetwork/simaware-tracon-project/pull/294).
+
+---
+
+## Worked example
+
+A boundary file is a single GeoJSON `Feature` with a `Polygon` or `MultiPolygon` geometry. Each file lives at `Boundaries/<FACILITY>/<SECTOR>.json` — the directory is the controlling facility's identifier, the filename is the sector identifier (commonly the airport ICAO).
+
+A minimal valid file looks like this:
+
+```json
+{
+    "type": "Feature",
+    "properties": {
+        "id": "XYZ",
+        "prefix": ["XYZ"],
+        "suffix": "APP",
+        "name": "Example Approach"
+    },
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [-100.0000000, 40.0000000],
+                [-100.0000000, 41.0000000],
+                [-99.0000000, 41.0000000],
+                [-99.0000000, 40.0000000],
+                [-100.0000000, 40.0000000]
+            ]
+        ]
+    }
+}
+```
+
+A few things to note about the example above:
+
+- **`properties.id`** is the label SimAware shows in the tooltip. Keep it short.
+- **`properties.prefix`** is an array — a single sector can match multiple callsign prefixes (e.g. `["LAX", "SCT"]`).
+- **`properties.suffix`** is optional; if omitted, SimAware treats it as `"APP"` for matching purposes. The `(prefix, suffix)` pair must be unique across the entire dataset.
+- **`properties.name`** is the radio callsign shown to controllers/pilots.
+- **Coordinates are `[longitude, latitude]`** in WGS84, max 7 decimal places.
+- **The first and last position of every ring must match** (closure). The example's outer ring opens and closes at `[-100.0, 40.0]`.
+
+For a real-world reference, look at [`Boundaries/A80/ATL.json`](Boundaries/A80/ATL.json) (Atlanta Approach) — it's a `MultiPolygon` with multiple disjoint pieces and shows a typical full sector definition.
+
+---
 
 > **Touching a legacy file?** If your PR modifies a file that contains pre-existing geometry violations (e.g. unclosed rings, excessive coordinate precision), CI will flag those issues. You're expected to clean them up as part of your PR — by editing a file, you take ownership of bringing it up to current standards. Run `yarn validate-geometry --fix` to handle the mechanical fixes automatically.
 

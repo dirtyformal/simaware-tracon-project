@@ -22,11 +22,7 @@ import {parseArgs} from 'node:util';
 import {parse as parseCsv} from 'csv-parse/sync';
 import type {Feature, MultiPolygon, Polygon} from 'geojson';
 import {findJsonFiles} from './lib/traverse.ts';
-import {
-    type Violation,
-    findDuplicatePrefixSuffix,
-    runFileChecks,
-} from './lib/geometry-checks.ts';
+import {type Violation, findDuplicatePrefixSuffix, runFileChecks} from './lib/geometry-checks.ts';
 
 // --- Configuration -----------------------------------------------------------
 
@@ -87,11 +83,11 @@ function detectBulkCommits(threshold: number): Map<string, number> {
     // Walk every commit reachable from any ref, collecting file-change count
     // per commit via --shortstat. Returns a map of SHA -> filesChanged for
     // commits exceeding the threshold.
-    const out = execFileSync(
-        'git',
-        ['log', '--all', '--shortstat', '--format=COMMIT %H'],
-        {cwd: rootPath, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024},
-    );
+    const out = execFileSync('git', ['log', '--all', '--shortstat', '--format=COMMIT %H'], {
+        cwd: rootPath,
+        encoding: 'utf8',
+        maxBuffer: 256 * 1024 * 1024,
+    });
     const result = new Map<string, number>();
     let currentSha: string | null = null;
     for (const line of out.split('\n')) {
@@ -130,11 +126,11 @@ interface AuthorAttribution {
 function gitFileHistory(file: string): CommitRecord[] {
     let out: string;
     try {
-        out = execFileSync(
-            'git',
-            ['log', '--follow', '--format=%H|%an|%ae|%aI', '--', file],
-            {cwd: rootPath, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024},
-        );
+        out = execFileSync('git', ['log', '--follow', '--format=%H|%an|%ae|%aI', '--', file], {
+            cwd: rootPath,
+            encoding: 'utf8',
+            maxBuffer: 16 * 1024 * 1024,
+        });
     } catch {
         return [];
     }
@@ -263,14 +259,10 @@ async function main() {
     const excludedShas = new Set<string>([...detectedBulk.keys(), ...explicitExcludes]);
     console.error(
         `  ${detectedBulk.size} commit(s) exceed --bulk-threshold=${bulkThreshold} (excluded from attribution)` +
-            (explicitExcludes.size > 0
-                ? `; +${explicitExcludes.size} explicit --exclude-sha`
-                : ''),
+            (explicitExcludes.size > 0 ? `; +${explicitExcludes.size} explicit --exclude-sha` : ''),
     );
     if (detectedBulk.size > 0) {
-        const top = [...detectedBulk.entries()]
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5);
+        const top = [...detectedBulk.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
         for (const [sha, files] of top) {
             console.error(`    ${sha.slice(0, 12)}  ${files} files`);
         }
@@ -392,7 +384,9 @@ function renderReport(
     if (orphans.length === 0) {
         out.push('_(none — every violating file has at least one non-bulk-move author)_');
     } else {
-        out.push('Files where every commit was filtered as bulk/structural. The maintainer must reclaim or rebuild attribution for these.');
+        out.push(
+            'Files where every commit was filtered as bulk/structural. The maintainer must reclaim or rebuild attribution for these.',
+        );
         out.push('');
         out.push('| File | Violations |');
         out.push('|---|---|');
@@ -409,9 +403,7 @@ function renderReport(
         if (!byAuthor.has(key)) byAuthor.set(key, []);
         byAuthor.get(key)!.push(e);
     }
-    const sortedAuthors = [...byAuthor.entries()].sort(
-        (a, b) => b[1].length - a[1].length,
-    );
+    const sortedAuthors = [...byAuthor.entries()].sort((a, b) => b[1].length - a[1].length);
 
     out.push(`## Files by primary author — ${sortedAuthors.length} contributor(s)`);
     out.push('');
@@ -444,7 +436,9 @@ function renderReport(
     if (dupes.length > 0) {
         out.push('## Duplicate prefix/suffix pairs (manual resolution required)');
         out.push('');
-        out.push('Each pair below has two or more files matching the same `(prefix, suffix)` — SimAware cannot disambiguate. One file in each group must be renamed (different prefix/suffix) or deleted.');
+        out.push(
+            'Each pair below has two or more files matching the same `(prefix, suffix)` — SimAware cannot disambiguate. One file in each group must be renamed (different prefix/suffix) or deleted.',
+        );
         out.push('');
         const grouped = new Map<string, Set<string>>();
         for (const v of dupes) {
@@ -457,7 +451,12 @@ function renderReport(
             );
         }
         for (const [key, files] of grouped) {
-            out.push(`- \`${key}\` — ${[...files].sort().map(f => `\`${f}\``).join(' + ')}`);
+            out.push(
+                `- \`${key}\` — ${[...files]
+                    .sort()
+                    .map(f => `\`${f}\``)
+                    .join(' + ')}`,
+            );
         }
         out.push('');
     }

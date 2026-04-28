@@ -54,15 +54,10 @@ export function roundCoord(n: number): number {
 
 // --- Per-file checks ---------------------------------------------------------
 
-export function runFileChecks(
-    file: string,
-    feature: Feature<Polygon | MultiPolygon>,
-): Violation[] {
+export function runFileChecks(file: string, feature: Feature<Polygon | MultiPolygon>): Violation[] {
     const violations: Violation[] = [];
     const where = (pi: number, ri: number) =>
-        feature.geometry.type === 'MultiPolygon'
-            ? `polygon ${pi}, ring ${ri}`
-            : `ring ${ri}`;
+        feature.geometry.type === 'MultiPolygon' ? `polygon ${pi}, ring ${ri}` : `ring ${ri}`;
 
     // Closure
     eachRing(feature, (ring, pi, ri) => {

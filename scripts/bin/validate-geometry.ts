@@ -71,11 +71,14 @@ if (changedOnly) {
         inputs.push(...positionals);
     } else if (!process.stdin.isTTY) {
         const stdin = readFileSync(0, 'utf8');
-        inputs.push(...stdin.split(/\r?\n/).map(s => s.trim()).filter(Boolean));
+        inputs.push(
+            ...stdin
+                .split(/\r?\n/)
+                .map(s => s.trim())
+                .filter(Boolean),
+        );
     }
-    const resolved = inputs
-        .map(resolveBoundaryPath)
-        .filter((p): p is string => p !== null);
+    const resolved = inputs.map(resolveBoundaryPath).filter((p): p is string => p !== null);
     changedSet = new Set(resolved);
     if (changedSet.size === 0) {
         console.log('No boundary files in changed set; nothing to validate.');
