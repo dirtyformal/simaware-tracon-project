@@ -1,4 +1,5 @@
 *.bcat
 TRACONBoundaries.geojson
+OWNERSHIP_REPORT.md
 .DS_Store
 .idea
